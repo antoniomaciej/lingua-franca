@@ -20,11 +20,12 @@
 """
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from lingua_franca.lang.common_data_es import _FRACTION_STRING_ES, \
+    _ARTICLES_ES, _NUM_STRING_ES, _FRACTIONS_BY_NAME
 from lingua_franca.lang.parse_common import is_numeric, look_for_fractions
 
 # Undefined articles ["un", "una", "unos", "unas"] can not be supressed,
 # in Spanish, "un caballo" means "a horse" or "one horse".
-es_articles = ["el", "la", "los", "las"]
 
 es_numbers = {
     "cero": 0,
@@ -92,6 +93,40 @@ es_numbers = {
     "novecientas": 900,
     "mil": 1000}
 
+dictOrdinals = {
+    "vi": 20,
+    "tri": 30,
+    "cuadra": 40,
+    "quincua": 50,
+    "sexa": 60,
+    "septua": 70,
+    "octo": 80,
+    "nona": 90,
+    "cent": 100,
+    "ducent": 200,
+    "tricent": 300,
+    "cuadringent": 400,
+    "quingent": 500,
+    "sexcent": 600,
+    "septingent": 700,
+    "octingent": 800,
+    "noningent": 900,
+    "mil": 1000}
+
+dictFrac = {key[:-1]: value for key, value in _FRACTIONS_BY_NAME.items()}
+
+
+def isOrdinal_es(input_str):
+    root_of_number = get_root_of_number_if_posible(input_str)
+    possibly_a_split_fraction = root_of_number.split("ésim")
+    prefix = possibly_a_split_fraction[0][:-1] if possibly_a_split_fraction[0].endswith(
+        'g', -1) else possibly_a_split_fraction[0]
+    suffix = possibly_a_split_fraction[1][1:] if (
+        len(possibly_a_split_fraction) > 1 and possibly_a_split_fraction[1]) else None
+    if prefix in dictOrdinals and suffix is None:
+        return dictOrdinals[prefix]
+    return False
+
 
 def isFractional_es(input_str):
     """
@@ -103,26 +138,16 @@ def isFractional_es(input_str):
         (bool) or (float): False if not a fraction, otherwise the fraction
 
     """
-    if input_str.endswith('s', -1):
-        input_str = input_str[:len(input_str) - 1]  # e.g. "fifths"
 
-    aFrac = ["medio", "media", "tercio", "cuarto", "cuarta", "quinto",
-             "quinta", "sexto", "sexta", u"séptimo", u"séptima", "octavo",
-             "octava", "noveno", "novena", u"décimo", u"décima", u"onceavo",
-             u"onceava", u"doceavo", u"doceava"]
-
-    if input_str.lower() in aFrac:
-        return 1.0 / (aFrac.index(input_str) + 2)
-    if (input_str == "cuarto" or input_str == "cuarta"):
-        return 1.0 / 4
-    if (input_str == u"vigésimo" or input_str == u"vigésima"):
-        return 1.0 / 20
-    if (input_str == u"trigésimo" or input_str == u"trigésima"):
-        return 1.0 / 30
-    if (input_str == u"centésimo" or input_str == u"centésima"):
-        return 1.0 / 100
-    if (input_str == u"milésimo" or input_str == u"milésima"):
-        return 1.0 / 1000
+    singular_str = get_singular_number_form_if_posible(input_str)
+    root_of_word_str = get_root_of_number_if_posible(singular_str)
+    if not (is_number_femenine_form(singular_str) or is_number_masculine_form(singular_str)):
+        return False
+    if root_of_word_str.lower() in dictFrac:
+        return (dictFrac[root_of_word_str])
+    possibly_ordinal = isOrdinal_es(input_str)    
+    if possibly_ordinal and (possibly_ordinal % 10) == 0:
+        return isOrdinal_es(root_of_word_str)
     return False
 
 
@@ -160,7 +185,7 @@ def extractnumber_es(text):
         elif isFractional_es(word):
             if not result:
                 result = 1
-            result = result * isFractional_es(word)
+            result = result * (1 / isFractional_es(word))
             count += 1
             continue
 
@@ -333,6 +358,28 @@ def es_number_parse(words, i):
     return es_number(i)
 
 
+def get_root_of_number_if_posible(input_str):
+    singular_str= get_singular_number_form_if_posible(input_str)
+    return singular_str[:-1] if is_number_femenine_form(singular_str) or is_number_masculine_form(singular_str) else singular_str
+
+
+def get_singular_number_form_if_posible(input_str):
+    singular_str = input_str[:-
+                             1] if is_number_plural_form(input_str) else input_str
+    return singular_str
+
+def is_number_masculine_form(singular_str):
+    return singular_str.endswith('o', -1)
+
+
+def is_number_femenine_form(singular_str):
+    return singular_str.endswith('a', -1)
+
+
+def is_number_plural_form(input_str):
+    return input_str.endswith('s', -1)
+
+
 def normalize_es(text, remove_articles):
     """ Spanish string normalization """
 
@@ -343,7 +390,7 @@ def normalize_es(text, remove_articles):
     while i < len(words):
         word = words[i]
 
-        if remove_articles and word in es_articles:
+        if remove_articles and word in _ARTICLES_ES:
             i += 1
             continue
 
@@ -941,7 +988,7 @@ def extract_datetime_es(input_str, currentDate=None, default_time=None):
                                 # wordPrev == "o" or
                                 # wordPrev == "oh" or
                                 wordPrev == "cero"
-                            )):
+                    )):
                         # 0800 hours (pronounced oh-eight-hundred)
                         strHH = int(word) / 100
                         strMM = int(word) - strHH * 100

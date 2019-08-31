@@ -16,13 +16,14 @@
 #
 import unittest
 
-from lingua_franca.parse import normalize
+from lingua_franca.parse import normalize, extract_number
 
 
 class TestNormalize(unittest.TestCase):
     """
         Test cases for Spanish parsing
     """
+
     def test_articles_es(self):
         self.assertEqual(normalize("esta es la prueba", lang="es",
                                    remove_articles=True),
@@ -56,9 +57,9 @@ class TestNormalize(unittest.TestCase):
                          "100 caballos")
         self.assertEqual(normalize(u"ciento once caballos", lang="es"),
                          "111 caballos")
-        self.assertEqual(normalize(u"habï¿½a cuatrocientas una vacas",
+        self.assertEqual(normalize(u"había cuatrocientas una vacas",
                                    lang="es"),
-                         u"habï¿½a 401 vacas")
+                         u"había 401 vacas")
         self.assertEqual(normalize(u"dos mil", lang="es"),
                          "2000")
         self.assertEqual(normalize(u"dos mil trescientas cuarenta y cinco",
@@ -72,9 +73,78 @@ class TestNormalize(unittest.TestCase):
             u"quinientas veinticinco mil", lang="es"),
             "525000")
         self.assertEqual(normalize(
+            u"treintaidos", lang="es"),
+            "treintaidos")
+        self.assertEqual(normalize(
             u"novecientos noventa y nueve mil novecientos noventa y nueve",
             lang="es"),
             "999999")
+
+    def test_isFractional_es(self):
+        self.assertEqual(extract_number(
+            "un par",
+            lang="es"),
+            1.0)
+        self.assertEqual(extract_number(
+            "dos enteros",
+            lang="es"),
+            2.0)
+        self.assertEqual(extract_number(
+            "tres cuartos",
+            lang="es"),
+            3.0 / 4.0)
+        self.assertEqual(extract_number(
+            "una tercera parte",
+            lang="es"),
+            1.0 / 3.0)
+        self.assertEqual(extract_number(
+            "una vigésima parte",
+            lang="es"),
+            1.0 / 20.0)
+        self.assertEqual(extract_number(
+            "siete excepciones",
+            lang="es"),
+            7.0)
+        self.assertEqual(extract_number(
+            "seis helados",
+            lang="es"),
+            6.0)
+        self.assertEqual(extract_number(
+            "siete doceavos",
+            lang="es"),
+            7.0 * (1.0 / 12.0))
+        self.assertEqual(extract_number(
+            "tres trigésimas de segundo",
+            lang="es"),
+            3.0 / 30.0)
+        self.assertEqual(extract_number(
+            "tres milésimas de segundo",
+            lang="es"),
+            3.0 / 1000.0)
+        # According to RAE, this form is wrong.
+        # On such composite ordinals, one should use the -avo -ava suffix.
+        # Therefor, it get's filtered.
+        # However, although gramatically wrong, it could be accepted, as the intent is clear.
+        # Then, the expected output should be 3.0 / 35.0
+        # http://lema.rae.es/dpd/srv/search?key=fraccionarios&submit.x=0&submit.y=0
+        self.assertEqual(extract_number(
+            "tres trigésimoquintas de segundo",
+            lang="es"),
+            3.0)
+        self.assertEqual(extract_number(
+            "tres octavos",
+            lang="es"),
+            3.0 / 8.0)
+        # self.assertEqual(extract_number(
+        #     "tres treintaidosavos",
+        #     lang="es"),
+        #     3.0 / 32.0)
+
+    # def test_isOrdinal_es(self):
+    #     self.assertEqual(extract_number(
+    #         "el vigésimo lugar",
+    #         lang="es"),
+    #         20)
 
 
 if __name__ == "__main__":

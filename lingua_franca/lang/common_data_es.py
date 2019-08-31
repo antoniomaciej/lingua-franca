@@ -19,11 +19,9 @@
 
 from collections import OrderedDict
 
+_ARTICLES_ES = {'el', 'la', 'los', 'las'}
 
-_ARTICLES = {'el', 'la', 'los', 'las'}
-
-
-NUM_STRING_ES = {
+_NUM_STRING_ES = {
     0: 'cero',
     1: 'uno',
     2: 'dos',
@@ -41,7 +39,7 @@ NUM_STRING_ES = {
     14: 'catorce',
     15: 'quince',
     16: 'dieciséis',
-    17: 'diecisete',
+    17: 'diecisiete',
     18: 'dieciocho',
     19: 'diecinueve',
     20: 'veinte',
@@ -52,29 +50,6 @@ NUM_STRING_ES = {
     70: 'setenta',
     80: 'ochenta',
     90: 'noventa'
-}
-
-
-_FRACTION_STRING_ES = {
-    2: 'medio',
-    3: 'tercio',
-    4: 'cuarto',
-    5: 'quinto',
-    6: 'sexto',
-    7: 'séptimo',
-    8: 'octavo',
-    9: 'noveno',
-    10: 'décimo',
-    11: 'onceavo',
-    12: 'doceavo',
-    13: 'treceavo',
-    14: 'catorceavo',
-    15: 'quinceavo',
-    16: 'dieciseisavo',
-    17: 'diecisieteavo',
-    18: 'dieciochoavo',
-    19: 'diecinueveavo',
-    20: 'veinteavo'
 }
 
 # https://www.grobauer.at/es_eur/zahlnamen.php
@@ -107,7 +82,6 @@ _LONG_SCALE_ES = OrderedDict([
     (1e336, "sexquinquagintillón"),
     (1e366, "unsexagintillón")
 ])
-
 
 _SHORT_SCALE_ES = OrderedDict([
     (100, 'centena'),
@@ -212,10 +186,9 @@ _ORDINAL_STRING_BASE_ES = {
     70: "septuagésimo",
     80: "octogésimo",
     90: "nonagésimo",
-    10e3: "centésimó",
-    1e3: "milésimo"
+    10e2: "centésimo",
+    10e3: "milésimo"
 }
-
 
 _SHORT_ORDINAL_STRING_ES = {
     1e6: "millonésimo",
@@ -230,12 +203,13 @@ _SHORT_ORDINAL_STRING_ES = {
     1e33: "milquintillonésimo"
     # TODO > 1e-33
 }
+
 _SHORT_ORDINAL_STRING_ES.update(_ORDINAL_STRING_BASE_ES)
 
 
 _LONG_ORDINAL_STRING_ES = {
     1e6: "millonésimo",
-    1e12: "billionth",
+    1e12: "billonésimo",
     1e18: "trillonésimo",
     1e24: "cuatrillonésimo",
     1e30: "quintillonésimo",
@@ -246,4 +220,30 @@ _LONG_ORDINAL_STRING_ES = {
     1e60: "decillonésimo"
     # TODO > 1e60
 }
+
 _LONG_ORDINAL_STRING_ES.update(_ORDINAL_STRING_BASE_ES)
+
+_FRACTION_STRING_ES = {
+    1: 'entero',
+    2: 'medio',
+    3: 'tercio',
+    4: 'cuarto',
+    5: 'quinto',
+    6: 'sexto',
+    7: 'séptimo',
+    8: 'octavo',
+    9: 'noveno',
+    10: 'décimo',
+    11: 'onceavo',
+    12: 'doceavo',
+    13: 'treceavo',
+    14: 'catorceavo',
+    15: 'quinceavo',
+    16: 'dieciseisavo',
+    17: 'diecisieteavo',
+    18: 'dieciochoavo',
+    19: 'diecinueveavo',
+    20: 'veinteavo'
+}
+
+_FRACTIONS_BY_NAME = dict({value:key for key,value in _FRACTION_STRING_ES.items()}, **{'tercera': 3})
