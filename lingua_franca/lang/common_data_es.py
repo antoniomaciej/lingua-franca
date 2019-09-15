@@ -16,10 +16,19 @@
 #
 
 from collections import OrderedDict
+from enum import Enum
 
 # Undefined articles ["un", "una"] can not be supressed,
 # in Spanish, "un caballo" means "a horse" or "one horse".
-_ARTICLES_ES = {"el", "la", "los", "las", "unos", "unas"}
+ARTICLES_ES = ("el", "la", "los", "las", "unos", "unas", "un", "una")
+
+class Gender(Enum):
+    FEMENINE = 'a'
+    MASCULINE = 'o'
+
+class Number(Enum):
+    SINGULAR = ''
+    PLURAL = 's'
 
 _STRING_NUM_ES = {
     "cero": 0,
@@ -203,7 +212,7 @@ _STRING_LONG_SCALE_ES = {
     'unquinquagintillón': 1e306,
     'duoquinquagintillón': 1e312,
     'sexquinquagintillón': 1e336,
-    'unsexagintillón': 1e366 
+    'unsexagintillón': 1e366
 
 }
 
@@ -421,7 +430,7 @@ _SHORT_ORDINAL_STRING_ES.update(_ORDINAL_STRING_BASE_ES)
 
 _STRING_SHORT_ORDINAL_ES.update(_STRING_ORDINAL_BASE_ES)
 
-#  para i> 10e12 solo se modifica el final: se solucionará al final 
+#  para i> 10e12 solo se modifica el final: se solucionará al final
 # de la depuración
 _LONG_ORDINAL_STRING_ES = {
     1e6: "millonésimo",
