@@ -9,23 +9,48 @@ class TestEsWordProperties(unittest.TestCase):
         word = 'hola'
         self.assertEqual(EsWordNaiveProperties(word).get_word(), word)
 
-    def test_properties_knows_word_is_article(self):
+    def test_word_properties_knows_word_is_article(self):
         positive_examples = ('la', 'un', 'el')
         self.assertTrue(all(map(lambda example: EsWordNaiveProperties(
             example).is_article(), positive_examples)))
         not_an_article = 'perro'
         self.assertFalse(EsWordNaiveProperties(not_an_article).is_article())
 
-    def test_properties_knows_number_of_word(self):
-        negative_examples = ('la', 'un', 'perro', 'el')
-        self.assertFalse(all(map(lambda example: EsWordNaiveProperties(
-            example).is_plural(), negative_examples)))
-        positive_examples = ('las', 'unos', 'perros', 'los')
-        self.assertTrue(all(map(lambda example: EsWordNaiveProperties(
-            example).is_plural(), positive_examples)))
+    def test_word_properties_knows_gender_and_number_of_word(self):
+        example = EsWordNaiveProperties('example')
+        self.assertEqual(
+            'example', example.get_declination_properties().get_word())
 
-    def test_properties_knows_gender_of_word(self):
-        pass
+    def test_get_declination_is_idempotent(self):
+        example = EsWordNaiveProperties('example')
+        self.assertEqual(
+            example.get_declination_properties().get_word(),
+            example.get_declination_properties().get_word())
+
+    def test_is_number(self):
+        positive_examples = ('22', '2.3', '0')
+        negative_examples = ('string', 'alphaNum3r1c', 'ejemplo', '2,5', '0,0')
+        for example in positive_examples:
+            self.assertTrue(EsWordNaiveProperties(
+                example).is_numeric())
+        for example in negative_examples:
+            self.assertFalse(EsWordNaiveProperties(
+                example).is_numeric())
+
+    def test_is_number_idempotency(self):
+        example = EsWordNaiveProperties('22')
+        self.assertEqual(example.is_numeric(), example.is_numeric())
+        self.assertEqual(example.try_get_numeric_value(), 22.0)
+
+    def test_is_try_get_numeric_value(self):
+        positive_examples = (('22', 22.0), ('2.3', 2.3), ('0', 0.0))
+        negative_examples = ('string', 'alphaNum3r1c', 'ejemplo', '2,5', '0,0')
+        for example in positive_examples:
+            self.assertEqual(EsWordNaiveProperties(
+                example[0]).try_get_numeric_value(), example[1])
+        for example in negative_examples:
+            self.assertEqual(EsWordNaiveProperties(
+                example).try_get_numeric_value(), example)
 
 
 class TestEsWordCase(unittest.TestCase):
@@ -60,7 +85,8 @@ class TestEsWordCase(unittest.TestCase):
             ('segundo', 'segund'),
             ('segunda', 'segund'))
         for example in examples:
-            self.assertEqual(EsNaiveDeclinationProperties(example[0]).get_root(), example[1])
+            self.assertEqual(EsNaiveDeclinationProperties(
+                example[0]).get_root(), example[1])
 
     def test_value_of_getters_is_idempotent(self):
         example = EsNaiveDeclinationProperties("caminos")
@@ -70,6 +96,7 @@ class TestEsWordCase(unittest.TestCase):
         self.assertEqual(example.get_number(), Number.PLURAL)
         self.assertEqual(example.get_root(), 'camin')
         self.assertEqual(example.get_root(), 'camin')
+
 
 if __name__ == '__main__':
     unittest.main()
